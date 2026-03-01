@@ -216,6 +216,11 @@ const linksData = [
     { source: "s_pyogenes", target: "penicillin_g", type: "bacteria-antibiotic" },
     { source: "t_pallidum", target: "penicillin_g", type: "bacteria-antibiotic" },
     { source: "actinomyces", target: "penicillin_g", type: "bacteria-antibiotic" },
+    { source: "s_agalactiae", target: "penicillin_g", type: "bacteria-antibiotic" },
+    { source: "c_diphtheriae", target: "penicillin_g", type: "bacteria-antibiotic" },
+    { source: "c_perfringens", target: "penicillin_g", type: "bacteria-antibiotic" },
+    { source: "c_botulinum", target: "penicillin_g", type: "bacteria-antibiotic" },
+    { source: "leptospira", target: "penicillin_g", type: "bacteria-antibiotic" },
 
     // Nafcillin
     { source: "s_aureus_mssa", target: "nafcillin", type: "bacteria-antibiotic" },
@@ -254,6 +259,7 @@ const linksData = [
     { source: "n_meningitidis", target: "ceftriaxone", type: "bacteria-antibiotic" },
     { source: "s_pneumoniae", target: "ceftriaxone", type: "bacteria-antibiotic" },
     { source: "b_burgdorferi", target: "ceftriaxone", type: "bacteria-antibiotic" }, // for late severe
+    { source: "viridans_strep", target: "ceftriaxone", type: "bacteria-antibiotic" },
 
     // Ceftazidime / Cefepime -> Pseudomonas
     { source: "pseudomonas_a", target: "ceftazidime", type: "bacteria-antibiotic" },
@@ -275,6 +281,7 @@ const linksData = [
     { source: "s_epidermidis", target: "vancomycin", type: "bacteria-antibiotic" },
     { source: "c_difficile", target: "vancomycin", type: "bacteria-antibiotic" },
     { source: "s_pneumoniae", target: "vancomycin", type: "bacteria-antibiotic" }, // for meningitis empiric
+    { source: "b_cereus", target: "vancomycin", type: "bacteria-antibiotic" }, // invasive
 
     // Fosfomycin
     { source: "e_coli", target: "fosfomycin", type: "bacteria-antibiotic" },
@@ -290,16 +297,24 @@ const linksData = [
     { source: "b_burgdorferi", target: "doxycycline", type: "bacteria-antibiotic" },
     { source: "r_rickettsii", target: "doxycycline", type: "bacteria-antibiotic" },
     { source: "brucella", target: "doxycycline", type: "bacteria-antibiotic" },
+    { source: "v_cholerae", target: "doxycycline", type: "bacteria-antibiotic" },
+    { source: "c_pneumoniae", target: "doxycycline", type: "bacteria-antibiotic" },
+    { source: "c_burnetii", target: "doxycycline", type: "bacteria-antibiotic" },
+    { source: "leptospira", target: "doxycycline", type: "bacteria-antibiotic" },
 
     // Macrolides
     { source: "m_pneumoniae", target: "azithromycin", type: "bacteria-antibiotic" },
     { source: "c_trachomatis", target: "azithromycin", type: "bacteria-antibiotic" },
     { source: "b_pertussis", target: "azithromycin", type: "bacteria-antibiotic" },
     { source: "l_pneumophila", target: "azithromycin", type: "bacteria-antibiotic" },
+    { source: "c_diphtheriae", target: "azithromycin", type: "bacteria-antibiotic" },
+    { source: "v_cholerae", target: "azithromycin", type: "bacteria-antibiotic" },
+    { source: "c_pneumoniae", target: "azithromycin", type: "bacteria-antibiotic" },
 
     // Clindamycin
     { source: "s_pyogenes", target: "clindamycin", type: "bacteria-antibiotic" },
     { source: "fusobacterium", target: "clindamycin", type: "bacteria-antibiotic" },
+    { source: "c_perfringens", target: "clindamycin", type: "bacteria-antibiotic" },
 
     // Linezolid
     { source: "s_aureus_mrsa", target: "linezolid", type: "bacteria-antibiotic" },

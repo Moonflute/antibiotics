@@ -7,6 +7,7 @@ const overviewBtn = document.getElementById('overview-btn');
 const resetBtn = document.getElementById('reset-btn');
 const closeDetailBtn = document.getElementById('close-detail-btn');
 const showDescBtn = document.getElementById('show-desc-btn');
+const zoomFitBtn = document.getElementById('zoom-fit-btn');
 
 let width = window.innerWidth;
 let height = window.innerHeight;
@@ -218,12 +219,20 @@ detailBtnGroup.on("click", (event, d) => {
 function focusOnNode(targetNode) {
     focusedNode = targetNode;
     isOverview = false;
+    lockedOverviewNode = null;
     resetBtn.classList.remove('hidden');
     overviewBtn.classList.add('hidden');
+    zoomFitBtn.classList.add('hidden');
     simulation.stop();
 
     // Clear overview boxes
     groupBBoxes.selectAll("*").remove();
+
+    // Clear inline hover lock styles so CSS Dim works properly
+    nodeGroup.style("opacity", null);
+    link.style("opacity", null);
+    link.attr("stroke", null);
+    link.attr("stroke-width", null);
 
     // Determine 3 Tiers (Diseases -> Bacteria -> Antibiotics)
     let tier1 = [], tier2 = [], tier3 = [];
@@ -352,13 +361,21 @@ function focusOnNode(targetNode) {
 function resetView() {
     focusedNode = null;
     isOverview = false;
+    lockedOverviewNode = null;
     resetBtn.classList.add('hidden');
     showDescBtn.classList.add('hidden');
+    zoomFitBtn.classList.add('hidden');
     overviewBtn.classList.remove('hidden');
     detailPanel.classList.add('hidden');
 
     // Clear overview boxes
     groupBBoxes.selectAll("*").remove();
+
+    // Remove inline highlight styles if they were applied in overview mode
+    nodeGroup.style("opacity", null);
+    link.style("opacity", null);
+    link.attr("stroke", null);
+    link.attr("stroke-width", null);
 
     nodes.forEach(n => {
         n.fx = null;
@@ -395,6 +412,22 @@ showDescBtn.addEventListener('click', () => {
 });
 
 resetBtn.addEventListener('click', resetView);
+
+// Zoom Fit Top Level in Overview
+zoomFitBtn.addEventListener('click', () => {
+    if (isOverview) {
+        // Calculate scale so the 3 columns fit width-wise
+        // Columns span from roughly width*0.15 - 150 to width*0.85 + 150
+        const totalContentWidth = (width * 0.70) + 360;
+        let scale = width / totalContentWidth;
+        if (scale > 1.2) scale = 1.2; // Max zoom cap
+        // Center the scaled content and align to top row (y ~ 50)
+        svg.transition().duration(800).call(
+            zoom.transform,
+            d3.zoomIdentity.translate((width / 2) - (width / 2) * scale, 50).scale(scale)
+        );
+    }
+});
 
 // Drag Detail Panel
 let isDraggingPanel = false;
@@ -438,10 +471,10 @@ function applyOverviewHighlight(d) {
 }
 
 function removeOverviewHighlight() {
-    nodeGroup.style("opacity", 1);
-    link.style("opacity", 0.2);
-    link.attr("stroke", "rgba(255,255,255,0.2)");
-    link.attr("stroke-width", 2);
+    nodeGroup.style("opacity", null);
+    link.style("opacity", null);
+    link.attr("stroke", null);
+    link.attr("stroke-width", null);
     groupBBoxes.style("opacity", 1);
 }
 
@@ -471,21 +504,33 @@ nodeGroup.on('mouseout', () => {
 
 // Overview Layout with Groupings
 overviewBtn.addEventListener('click', () => {
+    const wasOverview = isOverview;
     isOverview = true;
     focusedNode = null;
+    lockedOverviewNode = null;
     resetBtn.classList.remove('hidden');
     overviewBtn.classList.add('hidden');
     showDescBtn.classList.add('hidden');
+    zoomFitBtn.classList.remove('hidden');
     simulation.stop();
     detailPanel.classList.add('hidden');
 
-    lockedOverviewNode = null;
+    // Clear inline highlight styles
+    nodeGroup.style("opacity", null);
+    link.style("opacity", null);
+    link.attr("stroke", null);
+    link.attr("stroke-width", null);
+
     nodeGroup.classed("dimmed", false);
     nodeGroup.selectAll(".detail-btn-group").style("display", ""); // Enable hover capability in overview
     link.classed("highlight", false);
     link.style("opacity", 0.2);
 
-    groupBBoxes.selectAll("*").remove(); // Clear existing
+    if (!wasOverview) {
+        groupBBoxes.selectAll("*").remove(); // Clear existing
+    } else {
+        groupBBoxes.style("opacity", 1);
+    }
 
     // Grouping helper
     const layoutColumn = (typeNodes, startX) => {
