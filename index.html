@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bacteria & Antibiotics Visualizer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Main Canvas Area -->
+        <svg id="canvas"></svg>
+
+        <!-- UI Overlay -->
+        <header class="header">
+            <h1>Bacteria & Antibiotics</h1>
+            <div style="display: flex; gap: 12px; pointer-events: auto;">
+                <button id="reset-btn" class="glass-btn secondary hidden">초기화 (Reset)</button>
+                <button id="overview-btn" class="glass-btn primary">전체보기 (Overview)</button>
+            </div>
+        </header>
+
+        <!-- Centered Node Detail Panel -->
+        <div id="detail-panel" class="detail-panel hidden glass-panel">
+            <button id="close-detail-btn" class="close-btn">&times;</button>
+            <h2 id="detail-title">Name</h2>
+            <div id="detail-category" class="category">Category</div>
+            <p id="detail-desc" class="description">Description goes here.</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container glass-panel">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-input" placeholder="균 또는 항생제 검색..." autocomplete="off">
+            <div id="search-results" class="search-results hidden"></div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>
