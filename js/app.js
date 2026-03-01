@@ -6,6 +6,7 @@ const searchResults = document.getElementById('search-results');
 const overviewBtn = document.getElementById('overview-btn');
 const resetBtn = document.getElementById('reset-btn');
 const closeDetailBtn = document.getElementById('close-detail-btn');
+const showDescBtn = document.getElementById('show-desc-btn');
 
 let width = window.innerWidth;
 let height = window.innerHeight;
@@ -13,6 +14,7 @@ let height = window.innerHeight;
 // State
 let focusedNode = null;
 let isOverview = false;
+let lockedOverviewNode = null;
 
 // Prepare data
 const nodes = nodesData.map(d => Object.create(d));
@@ -341,13 +343,17 @@ function focusOnNode(targetNode) {
     detailPanel.style.left = '';
     detailPanel.style.top = '';
     detailPanel.style.right = '';
-    detailPanel.classList.remove('hidden');
+
+    // UI changes for Mobile UX: Don't show panel immediately. Show button instead.
+    detailPanel.classList.add('hidden');
+    showDescBtn.classList.remove('hidden');
 }
 
 function resetView() {
     focusedNode = null;
     isOverview = false;
     resetBtn.classList.add('hidden');
+    showDescBtn.classList.add('hidden');
     overviewBtn.classList.remove('hidden');
     detailPanel.classList.add('hidden');
 
@@ -359,8 +365,9 @@ function resetView() {
         n.fy = null;
     });
 
+    lockedOverviewNode = null;
     nodeGroup.classed("dimmed", false);
-    nodeGroup.selectAll(".detail-btn-group").style("display", "block");
+    nodeGroup.selectAll(".detail-btn-group").style("display", "");
     link.classed("highlight", false);
     link.style("opacity", 1);
 
@@ -372,7 +379,21 @@ function resetView() {
     );
 }
 
-closeDetailBtn.addEventListener('click', resetView);
+closeDetailBtn.addEventListener('click', () => {
+    detailPanel.classList.add('hidden');
+    if (focusedNode) {
+        showDescBtn.classList.remove('hidden');
+    }
+});
+
+showDescBtn.addEventListener('click', () => {
+    detailPanel.style.left = '';
+    detailPanel.style.top = '';
+    detailPanel.style.right = '';
+    detailPanel.classList.remove('hidden');
+    showDescBtn.classList.add('hidden');
+});
+
 resetBtn.addEventListener('click', resetView);
 
 // Drag Detail Panel
@@ -402,30 +423,49 @@ document.addEventListener('mouseup', () => {
 });
 
 // Hover in Overview
-nodeGroup.on('mouseover', (event, d) => {
-    if (isOverview) {
-        const connectedNodes = new Set([d.id]);
-        const connectedLinksSet = new Set();
-        links.forEach(l => {
-            if (l.source.id === d.id) { connectedNodes.add(l.target.id); connectedLinksSet.add(l); }
-            if (l.target.id === d.id) { connectedNodes.add(l.source.id); connectedLinksSet.add(l); }
-        });
-        nodeGroup.style("opacity", n => connectedNodes.has(n.id) ? 1 : 0.1);
-        link.style("opacity", l => connectedLinksSet.has(l) ? 1 : 0.05);
-        link.attr("stroke", l => connectedLinksSet.has(l) ? "var(--accent-color)" : "rgba(255,255,255,0.2)");
-        link.attr("stroke-width", l => connectedLinksSet.has(l) ? 4 : 2);
+function applyOverviewHighlight(d) {
+    const connectedNodes = new Set([d.id]);
+    const connectedLinksSet = new Set();
+    links.forEach(l => {
+        if (l.source.id === d.id) { connectedNodes.add(l.target.id); connectedLinksSet.add(l); }
+        if (l.target.id === d.id) { connectedNodes.add(l.source.id); connectedLinksSet.add(l); }
+    });
+    nodeGroup.style("opacity", n => connectedNodes.has(n.id) ? 1 : 0.1);
+    link.style("opacity", l => connectedLinksSet.has(l) ? 1 : 0.05);
+    link.attr("stroke", l => connectedLinksSet.has(l) ? "var(--accent-color)" : "rgba(255,255,255,0.2)");
+    link.attr("stroke-width", l => connectedLinksSet.has(l) ? 4 : 2);
+    groupBBoxes.style("opacity", 0.1);
+}
 
-        // Ensure group boxes don't block visibility of faded items overly
-        groupBBoxes.style("opacity", 0.1);
+function removeOverviewHighlight() {
+    nodeGroup.style("opacity", 1);
+    link.style("opacity", 0.2);
+    link.attr("stroke", "rgba(255,255,255,0.2)");
+    link.attr("stroke-width", 2);
+    groupBBoxes.style("opacity", 1);
+}
+
+nodeGroup.on('click', (event, d) => {
+    if (isOverview) {
+        if (lockedOverviewNode === d) {
+            lockedOverviewNode = null; // unlock
+            removeOverviewHighlight();
+        } else {
+            lockedOverviewNode = d; // lock
+            applyOverviewHighlight(d);
+        }
     }
 });
+
+nodeGroup.on('mouseover', (event, d) => {
+    if (isOverview && !lockedOverviewNode) {
+        applyOverviewHighlight(d);
+    }
+});
+
 nodeGroup.on('mouseout', () => {
-    if (isOverview) {
-        nodeGroup.style("opacity", 1);
-        link.style("opacity", 0.2);
-        link.attr("stroke", "rgba(255,255,255,0.2)");
-        link.attr("stroke-width", 2);
-        groupBBoxes.style("opacity", 1);
+    if (isOverview && !lockedOverviewNode) {
+        removeOverviewHighlight();
     }
 });
 
@@ -435,10 +475,13 @@ overviewBtn.addEventListener('click', () => {
     focusedNode = null;
     resetBtn.classList.remove('hidden');
     overviewBtn.classList.add('hidden');
+    showDescBtn.classList.add('hidden');
     simulation.stop();
     detailPanel.classList.add('hidden');
+
+    lockedOverviewNode = null;
     nodeGroup.classed("dimmed", false);
-    nodeGroup.selectAll(".detail-btn-group").style("display", "none"); // Hide detail btns in overview
+    nodeGroup.selectAll(".detail-btn-group").style("display", ""); // Enable hover capability in overview
     link.classed("highlight", false);
     link.style("opacity", 0.2);
 
